@@ -6,7 +6,7 @@
 	+ JDK 8
 	+ Netbeans
 	+ MySQL 5.6.12
-		+ database名 v327 (ソースコード上で直接指定 v207と被るため)
+		+ database名 chui_jms_v334
 
 ## 実行方法
 + sqlをimportする

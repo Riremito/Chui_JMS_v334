@@ -73,7 +73,7 @@ public class LoginHandler {
             try {
                 byte[] hotFix = Files.readAllBytes(dataWz.toPath());
                 byte[] dataWzHash = Util.sha1Hash(hotFix);
-                if (dataWzHash == null)  {
+                if (dataWzHash == null) {
                     log.error("Data.wz hashing has failed.");
                     incorrectHotFix = true;
                     client.write(Login.setHotFix(incorrectHotFix));
@@ -81,7 +81,7 @@ public class LoginHandler {
                 }
                 // Only care about the first 4 bytes of the hash
                 dataWzHash = Arrays.copyOfRange(dataWzHash, 0, 4);
-                if (Arrays.equals(dataWzHash, appliedHotFix))  {
+                if (Arrays.equals(dataWzHash, appliedHotFix)) {
                     incorrectHotFix = false;
                     client.write(Login.setHotFix(incorrectHotFix));
                     return;
@@ -170,6 +170,23 @@ public class LoginHandler {
             result = LoginType.NotRegistered;
             success = false;
         }
+
+        // auto register
+        if (result == LoginType.NotRegistered) {
+            User new_user = new User(username, password);
+            new_user.setBanExpireDate(null);
+            new_user.setOffenseManager(null);
+            new_user.setCharacterSlots(6);
+            new_user.setPic("777777");
+            DatabaseManager.saveToDB(new_user);
+            user = User.getFromDBByName(username);
+            Server.getInstance().addUser(user);
+            c.setUser(user);
+            c.setMachineID(machineID);
+            result = LoginType.Success;
+            success = true;
+        }
+
         c.write(Login.checkPasswordResult(success, result, user));
         if (success) {
             c.write(Login.sendAccountInfo(user));
@@ -420,7 +437,6 @@ public class LoginHandler {
         // if anything is wrong, the 2nd pwd authorizer should return an error
     }
 
-
     @Handler(op = InHeader.CHANGE_PIC_REQUEST)
     public static void handleChangePicRequest(Client c, InPacket inPacket) {
         String currentPic = inPacket.decodeString();
@@ -465,7 +481,7 @@ public class LoginHandler {
     }
 
     @Handler(op = InHeader.WVS_CRASH_CALLBACK)
-    public static void handleWvsCrashCallback(Client c, InPacket inPacket){
+    public static void handleWvsCrashCallback(Client c, InPacket inPacket) {
         if (c != null && c.getChr() != null) {
             c.getChr().setChangingChannel(false);
             c.getChr().logout();
